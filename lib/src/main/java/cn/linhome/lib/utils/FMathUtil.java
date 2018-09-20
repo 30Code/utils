@@ -3,7 +3,7 @@ package cn.linhome.lib.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public final class FMathUtil
+public class FMathUtil
 {
     private FMathUtil()
     {

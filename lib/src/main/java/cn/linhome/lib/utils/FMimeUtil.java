@@ -1,6 +1,6 @@
 package cn.linhome.lib.utils;
 
-public final class FMimeUtil
+public class FMimeUtil
 {
     private FMimeUtil()
     {

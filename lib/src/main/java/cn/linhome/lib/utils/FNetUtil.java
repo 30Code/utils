@@ -3,34 +3,37 @@ package cn.linhome.lib.utils;
 import android.text.TextUtils;
 
 import java.net.InetAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.URL;
 
 /**
  * 网络工具类
  */
-public final class FNetUtil
+public class FNetUtil
 {
     private FNetUtil()
     {
     }
 
     /**
-     * 域名是否可用，只能在后台线程调用
+     * 返回url的IP地址
      *
-     * @param host
+     * @param url
      * @return
      */
-    public static boolean isHostAvailable(String host)
+    public static String getHostAddress(String url)
     {
         try
         {
-            InetAddress inetAddress = InetAddress.getByName(host);
-            String hostAddress = inetAddress.getHostAddress();
-            return !TextUtils.isEmpty(hostAddress);
-        } catch (UnknownHostException e)
+            final String host = new URL(url).getHost();
+            if (TextUtils.isEmpty(host))
+            {
+                return null;
+            }
+            return InetAddress.getByName(host).getHostAddress();
+        } catch (Exception e)
         {
-            return false;
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -38,8 +41,7 @@ public final class FNetUtil
     {
         try
         {
-            URI uri = new URI(url);
-            return uri.getHost();
+            return new URL(url).getHost();
         } catch (Exception e)
         {
             e.printStackTrace();

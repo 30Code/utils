@@ -3,7 +3,6 @@ package cn.linhome.lib.utils;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,10 +20,7 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public final class FViewUtil
+public class FViewUtil
 {
     private FViewUtil()
     {
@@ -558,6 +554,21 @@ public final class FViewUtil
     }
 
     /**
+     * 返回View的可见状态
+     *
+     * @param view
+     * @return -1(view为null的时候)<br> {@link View#VISIBLE}<br> {@link View#INVISIBLE}<br> {@link View#GONE}<br>
+     */
+    public static int getVisibility(View view)
+    {
+        if (view == null)
+        {
+            return -1;
+        }
+        return view.getVisibility();
+    }
+
+    /**
      * 设置view的可见状态
      *
      * @param view
@@ -677,6 +688,66 @@ public final class FViewUtil
     }
 
     /**
+     * view是否被添加到界面上
+     *
+     * @param view
+     * @return
+     */
+    public static boolean isAttached(View view)
+    {
+        if (view == null)
+        {
+            return false;
+        }
+        ViewParent parent = view.getRootView().getParent();
+        if (parent == null)
+        {
+            return false;
+        }
+        if (!(parent instanceof View))
+        {
+            return true;
+        }
+        return isAttached((View) parent);
+    }
+
+    /**
+     * view是否在某个屏幕的触摸点下面
+     *
+     * @param view
+     * @param event       触摸点
+     * @param outLocation 用于接收view的x和y坐标的数组，可以为null
+     * @return
+     */
+    public static boolean isViewUnder(View view, MotionEvent event, int[] outLocation)
+    {
+        final int x = (int) event.getRawX();
+        final int y = (int) event.getRawY();
+        return isViewUnder(view, x, y, outLocation);
+    }
+
+    /**
+     * view是否在某个屏幕坐标下面
+     *
+     * @param view
+     * @param x           屏幕x坐标
+     * @param y           屏幕y坐标
+     * @param outLocation 用于接收view的x和y坐标的数组，可以为null
+     * @return
+     */
+    public static boolean isViewUnder(View view, int x, int y, int[] outLocation)
+    {
+        final int[] location = getLocationOnScreen(view, outLocation);
+        final int left = location[0];
+        final int top = location[1];
+        final int right = left + view.getWidth();
+        final int bottom = top + view.getHeight();
+
+        return left < right && top < bottom
+                && x >= left && x < right && y >= top && y < bottom;
+    }
+
+    /**
      * 获得view在屏幕上的坐标
      *
      * @param view
@@ -691,25 +762,6 @@ public final class FViewUtil
         }
         view.getLocationOnScreen(outLocation);
         return outLocation;
-    }
-
-    /**
-     * 把view从它的父布局移除
-     *
-     * @param view
-     */
-    public static void removeView(View view)
-    {
-        if (view == null)
-        {
-            return;
-        }
-        final ViewParent viewParent = view.getParent();
-        if (viewParent instanceof ViewGroup)
-        {
-            ViewGroup parent = (ViewGroup) viewParent;
-            parent.removeView(view);
-        }
     }
 
     /**
@@ -752,73 +804,6 @@ public final class FViewUtil
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(bmp.getWidth(), bmp.getHeight());
         imageView.setLayoutParams(params);
         return imageView;
-    }
-
-    /**
-     * 获得view在屏幕上的可见范围
-     *
-     * @param view
-     * @return
-     */
-    public static Rect getGlobalVisibleRect(View view)
-    {
-        return getGlobalVisibleRect(view, null);
-    }
-
-    /**
-     * 获得view在屏幕上的可见范围
-     *
-     * @param view
-     * @param outRect 如果为null，内部会创建一个Rect对象
-     * @return
-     */
-    public static Rect getGlobalVisibleRect(View view, Rect outRect)
-    {
-        if (outRect == null)
-        {
-            outRect = new Rect();
-        }
-        if (view != null && view.getVisibility() == View.VISIBLE)
-        {
-            view.getGlobalVisibleRect(outRect);
-        }
-        return outRect;
-    }
-
-    /**
-     * 相对屏幕的x和y坐标是否在view的区域内
-     *
-     * @param view
-     * @param x
-     * @param y
-     * @return
-     */
-    public static boolean isViewUnder(View view, int x, int y)
-    {
-        boolean result = false;
-        Rect r = getGlobalVisibleRect(view);
-        if (r != null)
-        {
-            result = r.contains(x, y);
-        }
-        return result;
-    }
-
-    /**
-     * MotionEvent是否在view的区域内
-     *
-     * @param view
-     * @param e
-     * @return
-     */
-    public static boolean isViewUnder(View view, MotionEvent e)
-    {
-        boolean result = false;
-        if (e != null)
-        {
-            result = isViewUnder(view, (int) e.getRawX(), (int) e.getRawY());
-        }
-        return result;
     }
 
     public static void wrapperPopupWindow(PopupWindow pop)
@@ -1067,40 +1052,56 @@ public final class FViewUtil
     }
 
     /**
+     * 把view从它的父容器移除
+     *
+     * @param view
+     */
+    public static void removeView(final View view)
+    {
+        try
+        {
+            final ViewGroup viewGroup = (ViewGroup) view.getParent();
+            viewGroup.removeView(view);
+        } catch (Exception e)
+        {
+        }
+    }
+
+    /**
      * 用新的view去替换布局中的旧view
      *
      * @param oldView
      * @param newView
      */
-    public static void replaceOldView(View oldView, View newView)
+    public static void replaceOldView(final View oldView, final View newView)
     {
-        if (oldView != null && newView != null && oldView != newView)
+        if (oldView == null || newView == null || oldView == newView)
         {
-            ViewParent viewParent = oldView.getParent();
-            if (viewParent instanceof ViewGroup)
-            {
-                ViewGroup viewGroup = (ViewGroup) viewParent;
-                int index = viewGroup.indexOfChild(oldView);
-                ViewGroup.LayoutParams params = oldView.getLayoutParams();
+            return;
+        }
+        final ViewParent parent = oldView.getParent();
+        if (parent instanceof ViewGroup)
+        {
+            final ViewGroup viewGroup = (ViewGroup) parent;
+            final int index = viewGroup.indexOfChild(oldView);
+            final ViewGroup.LayoutParams params = oldView.getLayoutParams();
 
-                removeView(oldView);
-                removeView(newView);
+            removeView(oldView);
+            removeView(newView);
 
-                viewGroup.addView(newView, index, params);
-            }
+            viewGroup.addView(newView, index, params);
         }
     }
 
     /**
-     * 替换child到parent，替换之前会先移除parent的所有view
+     * 替换child到parent，仅保留当前child对象在容器中
      *
      * @param parent
      * @param child
-     * @return
      */
-    public static boolean replaceView(ViewGroup parent, View child)
+    public static void replaceView(View parent, View child)
     {
-        return addView(parent, child, null, true);
+        addView(parent, child, true);
     }
 
     /**
@@ -1108,11 +1109,10 @@ public final class FViewUtil
      *
      * @param parent
      * @param child
-     * @return
      */
-    public static boolean addView(ViewGroup parent, View child)
+    public static void addView(View parent, View child)
     {
-        return addView(parent, child, null, false);
+        addView(parent, child, false);
     }
 
     /**
@@ -1120,29 +1120,43 @@ public final class FViewUtil
      *
      * @param parent         父容器
      * @param child          要添加的view
-     * @param params         布局参数
      * @param removeAllViews 添加的时候是否需要先移除parent的所有子view
-     * @return
      */
-    private static boolean addView(ViewGroup parent, View child, ViewGroup.LayoutParams params, boolean removeAllViews)
+    private static void addView(final View parent, final View child, final boolean removeAllViews)
     {
-        if (parent != null && child != null && child.getParent() != parent)
+        if (parent == null || child == null)
+        {
+            return;
+        }
+        if (!(parent instanceof ViewGroup))
+        {
+            throw new IllegalArgumentException("parent must be instance of ViewGroup");
+        }
+
+        final ViewGroup viewGroup = (ViewGroup) parent;
+        if (child.getParent() != viewGroup)
         {
             if (removeAllViews)
             {
-                parent.removeAllViews();
+                viewGroup.removeAllViews();
             }
             removeView(child);
-            if (params != null)
+            viewGroup.addView(child);
+        } else
+        {
+            if (removeAllViews)
             {
-                parent.addView(child, params);
-            } else
-            {
-                parent.addView(child);
+                final int count = viewGroup.getChildCount();
+                for (int i = 0; i < count; i++)
+                {
+                    final View item = viewGroup.getChildAt(i);
+                    if (item != child)
+                    {
+                        viewGroup.removeView(item);
+                    }
+                }
             }
-            return true;
         }
-        return false;
     }
 
     /**
@@ -1152,7 +1166,7 @@ public final class FViewUtil
      * @param parent
      * @param child
      */
-    public static void toggleView(ViewGroup parent, View child)
+    public static void toggleView(final ViewGroup parent, final View child)
     {
         if (child == null || parent == null)
         {
@@ -1163,9 +1177,11 @@ public final class FViewUtil
             removeView(child);
             parent.addView(child);
         }
-        List<View> listChild = getChilds(parent);
-        for (View item : listChild)
+
+        final int count = parent.getChildCount();
+        for (int i = 0; i < count; i++)
         {
+            final View item = parent.getChildAt(i);
             if (item == child)
             {
                 item.setVisibility(View.VISIBLE);
@@ -1174,31 +1190,6 @@ public final class FViewUtil
                 item.setVisibility(View.GONE);
             }
         }
-    }
-
-    /**
-     * 获得parent的所有第一级子view
-     *
-     * @param parent
-     * @return
-     */
-    public static List<View> getChilds(ViewGroup parent)
-    {
-        if (parent == null)
-        {
-            return null;
-        }
-        int count = parent.getChildCount();
-        if (count <= 0)
-        {
-            return null;
-        }
-        List<View> listChild = new ArrayList<>();
-        for (int i = 0; i < count; i++)
-        {
-            listChild.add(parent.getChildAt(i));
-        }
-        return listChild;
     }
 
     /**

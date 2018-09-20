@@ -9,7 +9,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 27
         versionCode 20180920
-        versionName "1.0.1"
+        versionName "1.0.2"
 
     }
 

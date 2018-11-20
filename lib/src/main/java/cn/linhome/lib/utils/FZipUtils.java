@@ -14,6 +14,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+/**
+ * zip解压工具类
+ */
 public class FZipUtils
 {
     /**
@@ -22,10 +25,11 @@ public class FZipUtils
      * @param zipFile   压缩包所在路径
      * @param targetDir 解压后的文件存放
      */
-    public static void singleZip(String zipFile, String targetDir)
+    public static boolean singleZip(String zipFile, String targetDir)
     {
         int BUFFER = 4096; // 这里缓冲区我们使用4KB，
         String strEntry; // 保存每个zip的条目名称
+
         try
         {
             BufferedOutputStream dest = null; // 缓冲输出流
@@ -56,12 +60,15 @@ public class FZipUtils
                 } catch (Exception ex)
                 {
                     ex.printStackTrace();
+                    return false;
                 }
             }
             zis.close();
         } catch (Exception ex)
         {
+            return false;
         }
+        return true;
     }
 
     /**

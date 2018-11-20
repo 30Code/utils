@@ -3,9 +3,6 @@ package cn.linhome.lib.utils;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * Created by zhengjun on 2018/2/5.
- */
 public class FStringUtil
 {
     private FStringUtil()

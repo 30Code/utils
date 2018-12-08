@@ -46,7 +46,7 @@ public class FFileUtil
     }
 
     /**
-     * 获得缓存目录
+     * 获得外部存储缓存目录
      *
      * @param dirName 缓存目录下的文件夹名字
      * @param context
@@ -62,6 +62,19 @@ public class FFileUtil
         {
             dir = new File(context.getCacheDir(), dirName);
         }
+        return mkdirs(dir);
+    }
+
+    /**
+     * 获得内部存储缓存目录
+     *
+     * @param dirName 缓存目录下的文件夹名字
+     * @param context
+     * @return
+     */
+    public static File getInternalCacheDir(String dirName, Context context)
+    {
+        File dir = new File(context.getCacheDir(), dirName);
         return mkdirs(dir);
     }
 

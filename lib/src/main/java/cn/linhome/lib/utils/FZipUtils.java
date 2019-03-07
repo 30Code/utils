@@ -3,7 +3,6 @@ package cn.linhome.lib.utils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 /**
  * zip解压工具类
@@ -20,69 +18,16 @@ import java.util.zip.ZipInputStream;
 public class FZipUtils
 {
     /**
-     * 不含子目录的文件压缩
-     *
-     * @param zipFile   压缩包所在路径
-     * @param targetDir 解压后的文件存放
+     * 解压缩
+     * @param zipFile 需要解压的文件
+     * @param folderPath 解压的目录
+     * @return
      */
-    public static boolean singleZip(String zipFile, String targetDir)
-    {
-        int BUFFER = 4096; // 这里缓冲区我们使用4KB，
-        String strEntry; // 保存每个zip的条目名称
-
-        try
-        {
-            BufferedOutputStream dest = null; // 缓冲输出流
-            FileInputStream fis = new FileInputStream(zipFile);
-            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry; // 每个zip条目的实例
-            while ((entry = zis.getNextEntry()) != null)
-            {
-                try
-                {
-                    int count;
-                    byte data[] = new byte[BUFFER];
-                    strEntry = entry.getName();
-                    File entryFile = new File(targetDir + strEntry);
-                    File entryDir = new File(entryFile.getParent());
-                    if (!entryDir.exists())
-                    {
-                        entryDir.mkdirs();
-                    }
-                    FileOutputStream fos = new FileOutputStream(entryFile);
-                    dest = new BufferedOutputStream(fos, BUFFER);
-                    while ((count = zis.read(data, 0, BUFFER)) != -1)
-                    {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                    dest.close();
-                } catch (Exception ex)
-                {
-                    ex.printStackTrace();
-                    return false;
-                }
-            }
-            zis.close();
-        } catch (Exception ex)
-        {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * 含子目录的文件压缩
-     *
-     * @throws Exception
-     */
-    // 第一个参数就是需要解压的文件，第二个就是解压的目录
     public static boolean upZipFile(String zipFile, String folderPath)
     {
         ZipFile zfile = null;
         try
         {
-            // 转码为GBK格式，支持中文
             zfile = new ZipFile(zipFile);
         } catch (IOException e)
         {
@@ -95,7 +40,7 @@ public class FZipUtils
         while (zList.hasMoreElements())
         {
             ze = (ZipEntry) zList.nextElement();
-            // 列举的压缩文件里面的各个文件，判断是否为目录
+            //列举的压缩文件里面的各个文件，判断是否为目录
             if (ze.isDirectory())
             {
                 String dirstr = folderPath + ze.getName();
@@ -113,6 +58,7 @@ public class FZipUtils
                 fos = new FileOutputStream(realFile);
             } catch (FileNotFoundException e)
             {
+                e.printStackTrace();
                 return false;
             }
             os = new BufferedOutputStream(fos);
@@ -122,10 +68,11 @@ public class FZipUtils
                 is = new BufferedInputStream(zfile.getInputStream(ze));
             } catch (IOException e)
             {
+                e.printStackTrace();
                 return false;
             }
             int readLen = 0;
-            // 进行一些内容复制操作
+            //进行一些内容复制操作
             try
             {
                 while ((readLen = is.read(buf, 0, 1024)) != -1)
@@ -134,6 +81,7 @@ public class FZipUtils
                 }
             } catch (IOException e)
             {
+                e.printStackTrace();
                 return false;
             }
             try
@@ -142,6 +90,7 @@ public class FZipUtils
                 os.close();
             } catch (IOException e)
             {
+                e.printStackTrace();
                 return false;
             }
         }
@@ -150,6 +99,7 @@ public class FZipUtils
             zfile.close();
         } catch (IOException e)
         {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -164,10 +114,10 @@ public class FZipUtils
      */
     public static File getRealFileName(String baseDir, String absFileName)
     {
-        absFileName = absFileName.replace("\\", "/");
         String[] dirs = absFileName.split("/");
         File ret = new File(baseDir);
         String substr = null;
+
         if (dirs.length > 1)
         {
             for (int i = 0; i < dirs.length - 1; i++)
@@ -175,10 +125,9 @@ public class FZipUtils
                 substr = dirs[i];
                 ret = new File(ret, substr);
             }
+
             if (!ret.exists())
-            {
                 ret.mkdirs();
-            }
             substr = dirs[dirs.length - 1];
             ret = new File(ret, substr);
             return ret;
@@ -188,5 +137,4 @@ public class FZipUtils
         }
         return ret;
     }
-
 }

@@ -1,6 +1,7 @@
 package cn.linhome.lib.utils.context;
 
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 
@@ -32,13 +33,17 @@ public class FClipboardUtil extends FContext
     public static CharSequence getText()
     {
         ClipboardManager clip = (ClipboardManager) get().getSystemService(Context.CLIPBOARD_SERVICE);
+
         if (clip.hasPrimaryClip())
         {
-            return clip.getPrimaryClip().getItemAt(0).getText();
-        } else
-        {
-            return null;
+            ClipData data = clip.getPrimaryClip();
+            if (data != null && clip.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN))
+            {
+                return clip.getPrimaryClip().getItemAt(0).getText();
+            }
         }
+
+        return null;
     }
 
 }

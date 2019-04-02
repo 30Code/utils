@@ -2,6 +2,8 @@ package cn.linhome.lib.utils.encrypt;
 
 import android.util.Base64;
 
+import java.nio.charset.Charset;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -10,7 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public final class FAESUtil
 {
-    public static final String DEFAULT_KEY = "1563009128000000";
+    public static final String DEFAULT_KEY = "Hg5KY67T8F9SeGrF";
 
     private FAESUtil()
     {
@@ -34,8 +36,8 @@ public final class FAESUtil
         String result = null;
         try
         {
-            byte[] contentBytes = content.getBytes("UTF-8");
-            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+            byte[] contentBytes = content.getBytes();
+            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
             encryptResult = cipher.doFinal(contentBytes);
@@ -69,13 +71,13 @@ public final class FAESUtil
         try
         {
             byte[] contentBytes = Base64.decode(content, Base64.NO_WRAP);
-            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
             decryptResult = cipher.doFinal(contentBytes);
             if (decryptResult != null)
             {
-                result = new String(decryptResult, "UTF-8");
+                result = new String(decryptResult, Charset.defaultCharset());
             }
         } catch (Exception ex)
         {
